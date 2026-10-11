@@ -52,3 +52,9 @@ body {
 .game-frame:after {
   border-radius: 0;
 }
+
+
+/* Asegurar que no aparezca ningún control extra sobre el juego */
+.mobile-controls[hidden] {
+  display: none !important;
+}
