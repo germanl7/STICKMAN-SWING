@@ -90,30 +90,35 @@
     return target;
   }
   function action() {
-    if(state!=="playing") { if(state==="menu" || state==="fallen" || state==="won") begin(); return; }
+    if(state!=="playing") { if(state==="menu") begin(); return; }
     if(player.rope) {
-      // Soltar la cuerda sin añadir velocidad artificial.
-      player.rope=null;
-      burst(player.x,player.y,8,"#61f5ff"); toast("Cuerda suelta"); playTone(520,.07);
+      player.rope=null; player.vx=Math.max(player.vx,160); player.vy-=15;
+      burst(player.x,player.y,10,"#61f5ff"); toast("¡SUELTA Y VUELA!"); playTone(690,.07);
       ui.action.innerHTML='ENGANCHAR <span>↗</span>';
     } else {
       const a=nearestAnchor();
       if(a) {
         player.rope={anchor:a,length:clamp(Math.hypot(a.x-player.x,a.y-player.y),105,245)};
         player.grounded=false; a.used=1;
-        player.vx=Math.max(player.vx,190);
-        burst(a.x,a.y,13,"#9b7cff"); toast("¡ENGANCHADO! Balancéate y suelta"); playTone(520,.08);
+        burst(a.x,a.y,13,"#9b7cff"); toast("¡ENGANCHADO! Balancea y suelta"); playTone(520,.08);
         ui.action.innerHTML='SOLTAR <span>↗</span>';
-      } else { toast("Acércate a un anclaje brillante ✦"); playTone(220,.06); }
+      } else { toast("Acércate a un anclaje ✦"); playTone(220,.06); }
     }
   }
-  // Only the left mouse click is a gameplay control.
-  canvas.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"||e.button!==0)return;e.preventDefault();canvas.focus();action();});
+  canvas.addEventListener("pointerdown",e=>{if(e.button!==undefined&&e.button!==0)return; e.preventDefault(); canvas.focus(); action();});
+  ui.action.addEventListener("click",action);
   ui.startBtn.addEventListener("click",begin);
-  ui.retryBtn.addEventListener("click",resetGame);
+  ui.retryBtn.addEventListener("click",()=>{if(state==="won"){} resetGame();});
   ui.restartBtn.addEventListener("click",resetGame);
   ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.sound.textContent=soundOn?"♫":"♩";ui.sound.style.opacity=soundOn?"1":".5";if(soundOn)playTone(520,.06);});
-  // Keyboard, right-click and touch gestures do not control the character.
+  window.addEventListener("keydown",e=>{
+    if(["Space","ArrowUp"].includes(e.code)){e.preventDefault();if(state!=="playing")begin();else action();}
+    if(e.code==="KeyR"){e.preventDefault();resetGame();}
+    if(e.code==="Enter"&&(state==="menu"||state==="fallen"||state==="won"))begin();
+  });
+  let touchStart=null;
+  canvas.addEventListener("touchstart",e=>{if(e.touches.length)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+  canvas.addEventListener("touchend",e=>{if(!touchStart)return;const t=e.changedTouches[0];if(Math.hypot(t.clientX-touchStart.x,t.clientY-touchStart.y)<18)action();touchStart=null;},{passive:true});
 
   function playTone(freq,duration) {
     if(!soundOn)return;
@@ -142,7 +147,7 @@
     if(p.invuln>0)p.invuln-=dt;
     p.vy+=GRAVITY*dt;
     if(!p.rope) {
-      p.vx += (190-p.vx)*Math.min(1,dt*.75);
+      p.vx += (220-p.vx)*Math.min(1,dt*.75);
       p.x += p.vx*dt;p.y += p.vy*dt;
       p.grounded=false;
       for(const pl of platforms) {
@@ -151,7 +156,7 @@
           if(pl.finish&&p.x>worldEnd+20){finish(true);return;}
         }
       }
-      if(p.grounded){p.vy=0;if(p.y<H*.7&&p.vx<200)p.vx+=10*dt;}
+      if(p.grounded){p.vy=0;if(p.y<H*.7&&p.vx<260)p.vx+=15*dt;}
     } else {
       const a=p.rope.anchor, dx=p.x-a.x,dy=p.y-a.y;
       const len=Math.hypot(dx,dy)||1, nx=dx/len,ny=dy/len;
