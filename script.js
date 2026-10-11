@@ -78,7 +78,8 @@
     for(let i=0;i<anchors.length;i++){
       const a=anchors[i]; if(a.used||(rope&&i===rope.index))continue;
       const dx=a.x-px,dy=a.y-py,d=Math.hypot(dx,dy);
-      if(d<Math.min(330,W*.62)&&d<bestD&&a.x>px-35){best=i;bestD=d;}
+      // Permitir engancharse desde más lejos, especialmente al comenzar el nivel.
+      if(d<Math.min(560,W*.95)&&d<bestD&&a.x>px-45){best=i;bestD=d;}
     }
     if(best<0){toastMsg("Acércate a un punto ✦");return;}
     const a=anchors[best]; rope={anchor:a,length:clamp(bestD,72,Math.min(310,H*.72)),index:best};
@@ -202,14 +203,10 @@
   function pointerDown(e) {
     if(e.target.closest("button")||!running||paused)return;
     e.preventDefault();
-    if(e.button===2) {
-      // Clic derecho: cambiar al siguiente punto sin soltar la cuerda primero.
-      attach();
-      return;
-    }
-    // Clic izquierdo solo engancha; no suelta accidentalmente la cuerda.
+    // Cada clic alterna: engancharse y luego soltar para impulsarse.
     keys.held=true;
-    if(!rope)attach();
+    if(rope) release();
+    else attach();
   }
   canvas.addEventListener("pointerdown",pointerDown,{passive:false});
   canvas.addEventListener("contextmenu",e=>e.preventDefault());
