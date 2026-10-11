@@ -21,7 +21,7 @@
   let cameraX = 0, distance = 0, best = Number(localStorage.getItem("ss-best") || 0);
   let player, anchors = [], platforms = [], coins = [], particles = [], buildings = [];
   let worldEnd = 3800, toastTimer = 0, frameCount = 0;
-  const GRAVITY = 1320;
+  const GRAVITY = 1450;
   const rand = (a,b) => a + Math.random() * (b-a);
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
@@ -57,7 +57,7 @@
   function resetGame() {
     makeLevel(level);
     cameraX = 0; distance = 0; runCoins = 0; frameCount = 0;
-    player = {x:80,y:H*.66,vx:255,vy:0,r:13,rope:null,grounded:true,angle:0,trail:[],alive:true,invuln:0};
+    player = {x:80,y:H*.66,vx:190,vy:0,r:13,rope:null,grounded:true,angle:0,trail:[],alive:true,invuln:0};
     state = "playing"; ui.start.classList.add("hidden"); ui.end.classList.add("hidden");
     ui.sideStatus.textContent = "En movimiento"; ui.sideStatus.style.color = "var(--green)";
     ui.action.innerHTML = 'ENGANCHAR <span>↗</span>';
@@ -92,22 +92,22 @@
   function action() {
     if(state!=="playing") { if(state==="menu" || state==="fallen" || state==="won") begin(); return; }
     if(player.rope) {
-      // Keep the swing's tangential speed and add a stronger forward launch.
+      // Soltar conserva el impulso natural del balanceo, sin acelerón extra.
       const a=player.rope.anchor, dx=player.x-a.x, dy=player.y-a.y;
       const len=Math.hypot(dx,dy)||1;
       const tx=-dy/len, ty=dx/len;
-      const tangentSpeed=Math.max(260,Math.abs(player.vx*tx+player.vy*ty)+190);
+      const tangentSpeed=Math.max(160,Math.abs(player.vx*tx+player.vy*ty)+50);
       player.rope=null;
-      player.vx=Math.max(320,player.vx+Math.abs(tx)*tangentSpeed+135);
-      player.vy=player.vy+ty*tangentSpeed-80;
-      burst(player.x,player.y,16,"#61f5ff"); toast("¡IMPULSO MÁXIMO! 🚀"); playTone(760,.09);
+      player.vx=Math.max(190,player.vx+Math.abs(tx)*tangentSpeed+20);
+      player.vy=player.vy+ty*tangentSpeed;
+      burst(player.x,player.y,10,"#61f5ff"); toast("¡Buen salto!"); playTone(760,.09);
       ui.action.innerHTML='ENGANCHAR <span>↗</span>';
     } else {
       const a=nearestAnchor();
       if(a) {
-        player.rope={anchor:a,length:clamp(Math.hypot(a.x-player.x,a.y-player.y),115,260)};
+        player.rope={anchor:a,length:clamp(Math.hypot(a.x-player.x,a.y-player.y),105,245)};
         player.grounded=false; a.used=1;
-        player.vx=Math.max(player.vx,245);
+        player.vx=Math.max(player.vx,190);
         burst(a.x,a.y,13,"#9b7cff"); toast("¡ENGANCHADO! Balancéate y suelta"); playTone(520,.08);
         ui.action.innerHTML='SOLTAR <span>↗</span>';
       } else { toast("Acércate a un anclaje brillante ✦"); playTone(220,.06); }
@@ -148,16 +148,16 @@
     if(p.invuln>0)p.invuln-=dt;
     p.vy+=GRAVITY*dt;
     if(!p.rope) {
-      p.vx += (255-p.vx)*Math.min(1,dt*.75);
+      p.vx += (190-p.vx)*Math.min(1,dt*.75);
       p.x += p.vx*dt;p.y += p.vy*dt;
       p.grounded=false;
       for(const pl of platforms) {
         if(p.x+p.r>pl.x&&p.x-p.r<pl.x+pl.w&&p.y+p.r>=pl.y&&p.y+p.r<=pl.y+Math.max(25,Math.abs(p.vy*dt)+9)&&p.vy>=0) {
-          p.y=pl.y-p.r;p.vy=0;p.grounded=true;p.vx=Math.max(p.vx,235);
+          p.y=pl.y-p.r;p.vy=0;p.grounded=true;p.vx=Math.max(p.vx,190);
           if(pl.finish&&p.x>worldEnd+20){finish(true);return;}
         }
       }
-      if(p.grounded){p.vy=0;if(p.y<H*.7&&p.vx<260)p.vx+=15*dt;}
+      if(p.grounded){p.vy=0;if(p.y<H*.7&&p.vx<200)p.vx+=10*dt;}
     } else {
       const a=p.rope.anchor, dx=p.x-a.x,dy=p.y-a.y;
       const len=Math.hypot(dx,dy)||1, nx=dx/len,ny=dy/len;
@@ -166,7 +166,7 @@
       p.x+=p.vx*dt;p.y+=p.vy*dt;
       const ndx=p.x-a.x,ndy=p.y-a.y,nlen=Math.hypot(ndx,ndy)||1;
       if(nlen>p.rope.length){p.x=a.x+ndx/nlen*p.rope.length;p.y=a.y+ndy/nlen*p.rope.length;const outward=(p.vx*ndx+p.vy*ndy)/nlen;p.vx-=outward*ndx/nlen;p.vy-=outward*ndy/nlen;}
-      p.vx+=155*dt;
+      p.vx+=95*dt;
       p.angle=Math.atan2(p.y-a.y,p.x-a.x)+Math.PI/2;
       if(p.x>a.x+30&&p.vx>90){} 
     }
