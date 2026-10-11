@@ -21,7 +21,7 @@
   let cameraX = 0, distance = 0, best = Number(localStorage.getItem("ss-best") || 0);
   let player, anchors = [], platforms = [], coins = [], particles = [], buildings = [];
   let worldEnd = 3800, toastTimer = 0, frameCount = 0;
-  const GRAVITY = 1450;
+  const GRAVITY = 1320;
   const rand = (a,b) => a + Math.random() * (b-a);
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
@@ -57,7 +57,7 @@
   function resetGame() {
     makeLevel(level);
     cameraX = 0; distance = 0; runCoins = 0; frameCount = 0;
-    player = {x:80,y:H*.66,vx:190,vy:0,r:13,rope:null,grounded:true,angle:0,trail:[],alive:true,invuln:0};
+    player = {x:80,y:H*.66,vx:255,vy:0,r:13,rope:null,grounded:true,angle:0,trail:[],alive:true,invuln:0};
     state = "playing"; ui.start.classList.add("hidden"); ui.end.classList.add("hidden");
     ui.sideStatus.textContent = "En movimiento"; ui.sideStatus.style.color = "var(--green)";
     ui.action.innerHTML = 'ENGANCHAR <span>↗</span>';
@@ -90,35 +90,36 @@
     return target;
   }
   function action() {
-    if(state!=="playing") { if(state==="menu") begin(); return; }
+    if(state!=="playing") { if(state==="menu" || state==="fallen" || state==="won") begin(); return; }
     if(player.rope) {
-      player.rope=null; player.vx=Math.max(player.vx,160); player.vy-=15;
-      burst(player.x,player.y,10,"#61f5ff"); toast("¡SUELTA Y VUELA!"); playTone(690,.07);
+      // Keep the swing's tangential speed and add a stronger forward launch.
+      const a=player.rope.anchor, dx=player.x-a.x, dy=player.y-a.y;
+      const len=Math.hypot(dx,dy)||1;
+      const tx=-dy/len, ty=dx/len;
+      const tangentSpeed=Math.max(260,Math.abs(player.vx*tx+player.vy*ty)+190);
+      player.rope=null;
+      player.vx=Math.max(320,player.vx+Math.abs(tx)*tangentSpeed+135);
+      player.vy=player.vy+ty*tangentSpeed-80;
+      burst(player.x,player.y,16,"#61f5ff"); toast("¡IMPULSO MÁXIMO! 🚀"); playTone(760,.09);
       ui.action.innerHTML='ENGANCHAR <span>↗</span>';
     } else {
       const a=nearestAnchor();
       if(a) {
-        player.rope={anchor:a,length:clamp(Math.hypot(a.x-player.x,a.y-player.y),105,245)};
+        player.rope={anchor:a,length:clamp(Math.hypot(a.x-player.x,a.y-player.y),115,260)};
         player.grounded=false; a.used=1;
-        burst(a.x,a.y,13,"#9b7cff"); toast("¡ENGANCHADO! Balancea y suelta"); playTone(520,.08);
+        player.vx=Math.max(player.vx,245);
+        burst(a.x,a.y,13,"#9b7cff"); toast("¡ENGANCHADO! Balancéate y suelta"); playTone(520,.08);
         ui.action.innerHTML='SOLTAR <span>↗</span>';
-      } else { toast("Acércate a un anclaje ✦"); playTone(220,.06); }
+      } else { toast("Acércate a un anclaje brillante ✦"); playTone(220,.06); }
     }
   }
-  canvas.addEventListener("pointerdown",e=>{if(e.button!==undefined&&e.button!==0)return; e.preventDefault(); canvas.focus(); action();});
-  ui.action.addEventListener("click",action);
+  // Only the left mouse click is a gameplay control.
+  canvas.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"||e.button!==0)return;e.preventDefault();canvas.focus();action();});
   ui.startBtn.addEventListener("click",begin);
-  ui.retryBtn.addEventListener("click",()=>{if(state==="won"){} resetGame();});
+  ui.retryBtn.addEventListener("click",resetGame);
   ui.restartBtn.addEventListener("click",resetGame);
   ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.sound.textContent=soundOn?"♫":"♩";ui.sound.style.opacity=soundOn?"1":".5";if(soundOn)playTone(520,.06);});
-  window.addEventListener("keydown",e=>{
-    if(["Space","ArrowUp"].includes(e.code)){e.preventDefault();if(state!=="playing")begin();else action();}
-    if(e.code==="KeyR"){e.preventDefault();resetGame();}
-    if(e.code==="Enter"&&(state==="menu"||state==="fallen"||state==="won"))begin();
-  });
-  let touchStart=null;
-  canvas.addEventListener("touchstart",e=>{if(e.touches.length)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
-  canvas.addEventListener("touchend",e=>{if(!touchStart)return;const t=e.changedTouches[0];if(Math.hypot(t.clientX-touchStart.x,t.clientY-touchStart.y)<18)action();touchStart=null;},{passive:true});
+  // Keyboard, right-click and touch gestures do not control the character.
 
   function playTone(freq,duration) {
     if(!soundOn)return;
@@ -147,12 +148,12 @@
     if(p.invuln>0)p.invuln-=dt;
     p.vy+=GRAVITY*dt;
     if(!p.rope) {
-      p.vx += (220-p.vx)*Math.min(1,dt*.75);
+      p.vx += (255-p.vx)*Math.min(1,dt*.75);
       p.x += p.vx*dt;p.y += p.vy*dt;
       p.grounded=false;
       for(const pl of platforms) {
         if(p.x+p.r>pl.x&&p.x-p.r<pl.x+pl.w&&p.y+p.r>=pl.y&&p.y+p.r<=pl.y+Math.max(25,Math.abs(p.vy*dt)+9)&&p.vy>=0) {
-          p.y=pl.y-p.r;p.vy=0;p.grounded=true;p.vx=Math.max(p.vx,190);
+          p.y=pl.y-p.r;p.vy=0;p.grounded=true;p.vx=Math.max(p.vx,235);
           if(pl.finish&&p.x>worldEnd+20){finish(true);return;}
         }
       }
@@ -165,7 +166,7 @@
       p.x+=p.vx*dt;p.y+=p.vy*dt;
       const ndx=p.x-a.x,ndy=p.y-a.y,nlen=Math.hypot(ndx,ndy)||1;
       if(nlen>p.rope.length){p.x=a.x+ndx/nlen*p.rope.length;p.y=a.y+ndy/nlen*p.rope.length;const outward=(p.vx*ndx+p.vy*ndy)/nlen;p.vx-=outward*ndx/nlen;p.vy-=outward*ndy/nlen;}
-      p.vx+=95*dt;
+      p.vx+=155*dt;
       p.angle=Math.atan2(p.y-a.y,p.x-a.x)+Math.PI/2;
       if(p.x>a.x+30&&p.vx>90){} 
     }
