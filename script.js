@@ -92,15 +92,9 @@
   function action() {
     if(state!=="playing") { if(state==="menu" || state==="fallen" || state==="won") begin(); return; }
     if(player.rope) {
-      // Soltar conserva el impulso natural del balanceo, sin acelerón extra.
-      const a=player.rope.anchor, dx=player.x-a.x, dy=player.y-a.y;
-      const len=Math.hypot(dx,dy)||1;
-      const tx=-dy/len, ty=dx/len;
-      const tangentSpeed=Math.max(160,Math.abs(player.vx*tx+player.vy*ty)+50);
+      // Soltar la cuerda sin añadir velocidad artificial.
       player.rope=null;
-      player.vx=Math.max(190,player.vx+Math.abs(tx)*tangentSpeed+20);
-      player.vy=player.vy+ty*tangentSpeed;
-      burst(player.x,player.y,10,"#61f5ff"); toast("¡Buen salto!"); playTone(760,.09);
+      burst(player.x,player.y,8,"#61f5ff"); toast("Cuerda suelta"); playTone(520,.07);
       ui.action.innerHTML='ENGANCHAR <span>↗</span>';
     } else {
       const a=nearestAnchor();
