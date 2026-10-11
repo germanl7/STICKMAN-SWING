@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090b1a">
+  <meta name="description" content="STICKMAN SWING: balancéate, suelta la cuerda y alcanza la meta en este juego de habilidad.">
+  <title>STICKMAN SWING — Neon Rope Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Stickman Swing inicio">
+        <span class="brand-mark">S<span>↗</span></span>
+        <span class="brand-name">STICKMAN <b>SWING</b><small>NEON ROPE ADVENTURE</small></span>
+      </a>
+      <div class="top-actions">
+        <div class="status-pill"><i></i> LISTO PARA JUGAR</div>
+        <button id="soundBtn" class="icon-btn" type="button" aria-label="Activar o silenciar sonido" title="Sonido">♫</button>
+      </div>
+    </header>
+
+    <section class="game-layout">
+      <div class="game-column">
+        <div class="game-heading">
+          <div><p class="eyebrow">DOMINA EL IMPULSO</p><h1>SUELTA. <span>BALANCEA.</span> VUELA.</h1></div>
+          <div class="level-chip">NIVEL <b id="levelLabel">01</b></div>
+        </div>
+
+        <div class="game-frame" id="gameFrame">
+          <canvas id="gameCanvas" aria-label="Juego Stickman Swing. Haz clic para engancharte o soltarte." tabindex="0"></canvas>
+          <div class="hud">
+            <div class="hud-card"><span class="hud-icon">◆</span><div><small>PROGRESO</small><b id="progressLabel">0%</b></div></div>
+            <div class="hud-card"><span class="hud-icon coin-icon">●</span><div><small>MONEDAS</small><b id="coinLabel">0</b></div></div>
+            <div class="hud-card"><span class="hud-icon">↗</span><div><small>RÉCORD</small><b id="bestLabel">0 m</b></div></div>
+          </div>
+
+          <div class="overlay" id="startOverlay">
+            <div class="overlay-orbit orbit-one"></div><div class="overlay-orbit orbit-two"></div>
+            <div class="hero-sticker"><span class="sticker-rope"></span><span class="sticker-stickman"><i></i><b></b><em></em><strong></strong></span><span class="sticker-star">✦</span></div>
+            <p class="overlay-kicker">TU AVENTURA COMIENZA AQUÍ</p>
+            <h2>STICKMAN<br><span>SWING</span></h2>
+            <p class="overlay-copy">Engánchate. Gana impulso. ¡Llega a la meta!</p>
+            <button class="primary-btn" id="startBtn" type="button">JUGAR AHORA <span>→</span></button>
+            <div class="key-hint"><span>🖱</span> CLIC PARA ENGANCHAR / SOLTAR</div>
+          </div>
+
+          <div class="overlay hidden" id="endOverlay">
+            <div class="result-icon" id="resultIcon">🏁</div>
+            <p class="overlay-kicker" id="resultKicker">NIVEL COMPLETADO</p>
+            <h2 id="resultTitle">¡LO LOGRASTE!</h2>
+            <p class="overlay-copy" id="resultCopy">Tu impulso te llevó hasta la meta.</p>
+            <div class="result-stats"><div><small>DISTANCIA</small><b id="resultDistance">0 m</b></div><div><small>MONEDAS</small><b id="resultCoins">0</b></div></div>
+            <button class="primary-btn" id="retryBtn" type="button">VOLVER A JUGAR <span>↻</span></button>
+          </div>
+
+          <div class="game-toast" id="toast" aria-live="polite"></div>
+          <div class="mobile-controls"><button id="mobileAction" type="button" aria-label="Enganchar o soltar cuerda">ENGANCHAR <span>↗</span></button></div>
+        </div>
+
+        <div class="below-game">
+          <div class="tip-line"><span class="tip-spark">✦</span><span id="tipText">Consejo: suelta la cuerda cuando estés subiendo para ganar distancia.</span></div>
+          <button id="restartBtn" class="restart-btn" type="button">↻ Reiniciar nivel</button>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <div class="panel-card mission-card">
+          <div class="card-title"><span class="title-symbol">◈</span><h3>OBJETIVO</h3><span class="live-dot"></span></div>
+          <p>Avanza por el cielo, usa los anclajes para balancearte y alcanza la bandera a cuadros.</p>
+          <div class="mission-track"><div class="track-line"><span></span></div><div class="track-labels"><span>INICIO</span><span>META</span></div></div>
+        </div>
+        <div class="panel-card controls-card">
+          <div class="card-title"><span class="title-symbol">⌘</span><h3>CONTROLES</h3></div>
+          <div class="control-row"><span class="control-icon">🖱</span><div><b>Clic / Tocar</b><small>Enganchar o soltar cuerda</small></div></div>
+          <div class="control-row"><span class="keycap">SPACE</span><div><b>Espacio</b><small>Soltar la cuerda</small></div></div>
+          <div class="control-row"><span class="keycap">R</span><div><b>Reiniciar</b><small>Volver al inicio del nivel</small></div></div>
+          <div class="control-row"><span class="keycap">↔</span><div><b>Movimiento</b><small>Avanza automáticamente</small></div></div>
+        </div>
+        <div class="panel-card stats-card">
+          <div class="card-title"><span class="title-symbol">✧</span><h3>TU AVENTURA</h3></div>
+          <div class="stat-line"><span>Mejor distancia</span><b id="sideBest">0 m</b></div>
+          <div class="stat-line"><span>Nivel actual</span><b id="sideLevel">01</b></div>
+          <div class="stat-line"><span>Estado</span><b class="status-text" id="sideStatus">En espera</b></div>
+          <div class="mini-progress"><span id="sideProgress"></span></div>
+        </div>
+        <div class="side-footer"><span class="footer-star">✦</span> HECHO PARA DOMINAR EL CIELO <span class="footer-star">✦</span></div>
+      </aside>
+    </section>
+    <footer class="page-footer"><span>© 2026 STICKMAN SWING</span><span>UN SALTO A LA VEZ <b>✦</b></span></footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
