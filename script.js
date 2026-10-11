@@ -102,7 +102,7 @@ function draw(){
  // Rings for hook points
  for(const a of anchors){if(a.used)continue;const pulse=1+Math.sin(performance.now()*.004+a.phase)*.12;ctx.save();ctx.shadowColor="#73f7ff";ctx.shadowBlur=20;ctx.strokeStyle="#73f7ff";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(a.x,a.y,9*pulse,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle="#d5ffff";ctx.beginPath();ctx.arc(a.x,a.y,2.8,0,Math.PI*2);ctx.fill();ctx.restore();}
  // Finish flag
- const fx=world-135,fy=H*.66;ctx.save();ctx.shadowColor="#d9ff72";ctx.shadowBlur=12;ctx.strokeStyle="#d9ff72";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(fx,fy-55);ctx.lineTo(fx,fy+38);ctx.stroke();ctx.shadowBlur=0;const cell=9;for(let row=0;row<5;row++)for(let col=0;col<6;col++){ctx.fillStyle=(row+col)%2?"#12192f":"#f6f8ff";ctx.fillRect(fx+col*cell,fy-55+row*cell,cell,cell);}ctx.restore();
+ const fx=world-135,fy=H*.78;ctx.save();ctx.shadowColor="#d9ff72";ctx.shadowBlur=12;ctx.strokeStyle="#d9ff72";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(fx,fy-55);ctx.lineTo(fx,fy+38);ctx.stroke();ctx.shadowBlur=0;const cell=9;for(let row=0;row<5;row++)for(let col=0;col<6;col++){ctx.fillStyle=(row+col)%2?"#12192f":"#f6f8ff";ctx.fillRect(fx+col*cell,fy-55+row*cell,cell,cell);}ctx.restore();
  // Rope
  if(rope){ctx.save();ctx.shadowColor="#75faff";ctx.shadowBlur=13;ctx.strokeStyle="#a2ffff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(rope.a.x,rope.a.y);ctx.lineTo(player.x,player.y-5);ctx.stroke();ctx.restore();}
  // Motion trail
@@ -120,7 +120,7 @@ function drawPlayer(x,y,a){
 }
 function clickCanvas(e){if(!running||paused)return;e.preventDefault();if(rope)release();else attach();}
 canvas.addEventListener("pointerdown",clickCanvas,{passive:false});canvas.addEventListener("contextmenu",e=>e.preventDefault());
-mainBtn.addEventListener("click",()=>{if(finished){level++;finished=false;}start();});
+mainBtn.addEventListener("click",()=>{if(paused){paused=false;overlay.classList.add("hidden");$("pauseBadge").hidden=true;running=true;last=performance.now();raf=requestAnimationFrame(loop);return;}if(finished){level++;finished=false;}start();});
 $("restartBtn").addEventListener("click",()=>{finished=false;start();});
 $("pauseBtn").addEventListener("click",()=>{if(!running&&!paused)return;paused=!paused;if(paused){running=false;$("pauseBadge").hidden=false;show("PAUSA","El recorrido está detenido. Continúa cuando estés listo.","CONTINUAR");}else{overlay.classList.add("hidden");$("pauseBadge").hidden=true;running=true;last=performance.now();raf=requestAnimationFrame(loop);}});
 addEventListener("keydown",e=>{if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();if(!e.repeat&&running){if(rope)release();else attach();}}if(e.code==="KeyR")start();if(e.code==="Escape"&&running)$("pauseBtn").click();});
