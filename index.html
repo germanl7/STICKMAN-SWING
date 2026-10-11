@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10152b">
+  <title>Stickman Swing — Juego de balanceo</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Stickman Swing inicio">
+        <span class="brand-mark">S</span>
+        <span><strong>STICKMAN <em>SWING</em></strong><small>ENGÁNCHATE Y VUELA</small></span>
+      </a>
+      <div class="top-actions">
+        <button id="soundBtn" class="icon-btn" aria-label="Activar o desactivar sonido" title="Sonido">♪</button>
+        <button id="pauseBtn" class="icon-btn" aria-label="Pausar juego" title="Pausar">Ⅱ</button>
+      </div>
+    </header>
+
+    <section class="hud" aria-label="Estadísticas del juego">
+      <div class="hud-item"><span class="hud-label">NIVEL</span><strong id="levelValue">01</strong></div>
+      <div class="hud-item"><span class="hud-label">PUNTOS</span><strong id="scoreValue">0000</strong></div>
+      <div class="hud-item progress-hud"><span class="hud-label">PROGRESO</span><div class="progress-track"><span id="progressFill"></span></div></div>
+    </section>
+
+    <section class="play-area">
+      <canvas id="gameCanvas" aria-label="Juego de plataformas y balanceo. Toca para engancharte y suelta para volar."></canvas>
+      <div id="overlay" class="overlay">
+        <div class="overlay-card">
+          <div class="hero-icon" aria-hidden="true"><span>↗</span><i></i></div>
+          <p class="eyebrow">UN SALTO A LA VEZ</p>
+          <h1 id="overlayTitle">¡A balancearse!</h1>
+          <p id="overlayText">Engánchate a los puntos, gana impulso y llega a la meta.</p>
+          <button id="mainBtn" class="primary-btn">JUGAR <span>→</span></button>
+          <div class="mini-controls"><span>🖱️ Clic / toque: enganchar</span><span>↗ Suelta para volar</span></div>
+        </div>
+      </div>
+      <div id="toast" class="toast" role="status"></div>
+      <div id="pauseBadge" class="pause-badge" hidden>PAUSA</div>
+    </section>
+
+    <footer class="bottom-bar">
+      <div class="tip"><span class="tip-dot"></span><span id="tipText">Consejo: suelta la cuerda cuando tengas buen impulso.</span></div>
+      <button id="restartBtn" class="secondary-btn">↻ <span>Reiniciar</span></button>
+    </footer>
+  </main>
+</body>
+</html>
