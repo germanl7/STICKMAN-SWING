@@ -30,7 +30,8 @@ function levelSetup(){
   player.x=85;player.y=floor-player.r;player.vx=2.8;player.vy=0;player.angle=0;player.grounded=true;player.trail=[];
   levelValue.textContent=String(level).padStart(2,"0");progressFill.style.width="0%";updateScore();saveProgress();
 }
-function saveProgress(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({level,score}));}catch(_){}}
+function saveProgress(){try{const data=JSON.stringify({level:Math.max(1,level),score:Math.max(0,score)});localStorage.setItem(SAVE_KEY,data);sessionStorage.setItem(SAVE_KEY,data);}catch(_){}}
+function loadProgress(){try{const a=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");const b=JSON.parse(sessionStorage.getItem(SAVE_KEY)||"null");const p=(a&&Number(a.level)>=1)?a:((b&&Number(b.level)>=1)?b:null);if(p){level=Math.max(1,Math.floor(Number(p.level)||1));score=Math.max(0,Math.floor(Number(p.score)||0));}}catch(_){}}
 function updateScore(){scoreValue.textContent=String(score).padStart(4,"0");}
 function start(){if(finished){level=1;score=0;finished=false;}levelSetup();running=true;paused=false;overlay.classList.add("hidden");$("pauseBadge").hidden=true;$("pauseBtn").textContent="Ⅱ";last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
 function show(titleText,descText,btn="VOLVER A INTENTAR"){running=false;title.textContent=titleText;desc.textContent=descText;mainBtn.innerHTML=btn+' <span>→</span>';overlay.classList.remove("hidden");}
@@ -130,5 +131,5 @@ $("pauseBtn").addEventListener("click",()=>{if(!running&&!paused)return;paused=!
 addEventListener("keydown",e=>{if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();if(!e.repeat&&running){if(rope)release();else attach();}}if(e.code==="KeyR")start();if(e.code==="Escape"&&running)$("pauseBtn").click();});
 addEventListener("pagehide",saveProgress);addEventListener("beforeunload",saveProgress);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveProgress();});
-resize();levelSetup();draw();
+loadProgress();resize();levelSetup();draw();
 })();
