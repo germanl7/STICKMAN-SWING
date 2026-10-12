@@ -4,7 +4,10 @@ const canvas=document.getElementById("gameCanvas"),ctx=canvas.getContext("2d");
 const $=id=>document.getElementById(id);
 const overlay=$("overlay"),title=$("overlayTitle"),desc=$("overlayText"),mainBtn=$("mainBtn");
 const levelValue=$("levelValue"),scoreValue=$("scoreValue"),progressFill=$("progressFill"),toast=$("toast");
-let W=900,H=560,dpr=1,raf=0,running=false,paused=false,finished=false,level=1,score=0,camera=0,last=0;
+const SAVE_KEY="stickman-swing-progress-v1";
+let savedProgress={};
+try{savedProgress=JSON.parse(localStorage.getItem(SAVE_KEY)||"{}")||{};}catch(_){savedProgress={};}
+let W=900,H=560,dpr=1,raf=0,running=false,paused=false,finished=false,level=Math.max(1,Number(savedProgress.level)||1),score=Math.max(0,Number(savedProgress.score)||0),camera=0,last=0;
 let world=2600,anchors=[],platforms=[],particles=[],rope=null,toastTimer=0;
 const player={x:95,y:0,vx:2.8,vy:0,r:12,angle:0,trail:[],grounded:true};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -25,8 +28,9 @@ function levelSetup(){
   }
   platforms.push({x:world-205,y:floor-8,w:250,h:H*.3,finish:true});
   player.x=85;player.y=floor-player.r;player.vx=2.8;player.vy=0;player.angle=0;player.grounded=true;player.trail=[];
-  levelValue.textContent=String(level).padStart(2,"0");progressFill.style.width="0%";updateScore();
+  levelValue.textContent=String(level).padStart(2,"0");progressFill.style.width="0%";updateScore();saveProgress();
 }
+function saveProgress(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({level,score}));}catch(_){}}
 function updateScore(){scoreValue.textContent=String(score).padStart(4,"0");}
 function start(){if(finished){level=1;score=0;finished=false;}levelSetup();running=true;paused=false;overlay.classList.add("hidden");$("pauseBadge").hidden=true;$("pauseBtn").textContent="Ⅱ";last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
 function show(titleText,descText,btn="VOLVER A INTENTAR"){running=false;title.textContent=titleText;desc.textContent=descText;mainBtn.innerHTML=btn+' <span>→</span>';overlay.classList.remove("hidden");}
@@ -50,7 +54,7 @@ function release(){
 }
 function burst(x,y,color,n){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-3,3),vy:rand(-3,2),life:rand(15,28),color,size:rand(1.5,3.5)});}
 function lose(){running=false;rope=null;show("¡Casi lo logras!","Caíste antes de llegar. Reintenta y suelta la cuerda cuando vayas avanzando hacia la meta.","REINTENTAR");}
-function win(){if(finished)return;finished=true;running=false;score+=150;updateScore();burst(player.x,player.y,"#d9ff72",30);show("¡NIVEL COMPLETADO!","Llegaste a la bandera. ¡Ganaste 150 puntos! Sigue con el próximo recorrido.","SIGUIENTE NIVEL");}
+function win(){if(finished)return;finished=true;running=false;score+=150;updateScore();saveProgress();burst(player.x,player.y,"#d9ff72",30);show("¡NIVEL COMPLETADO!","Llegaste a la bandera. ¡Ganaste 150 puntos! Sigue con el próximo recorrido.","SIGUIENTE NIVEL");}
 function loop(t){if(!running)return;const dt=clamp((t-last)/16.67,.5,1.6);last=t;update(dt);draw();if(running)raf=requestAnimationFrame(loop);}
 function update(dt){
  const oldY=player.y,oldX=player.x;
@@ -124,5 +128,7 @@ mainBtn.addEventListener("click",()=>{if(paused){paused=false;overlay.classList.
 $("restartBtn").addEventListener("click",()=>{finished=false;start();});
 $("pauseBtn").addEventListener("click",()=>{if(!running&&!paused)return;paused=!paused;if(paused){running=false;$("pauseBadge").hidden=false;show("PAUSA","El recorrido está detenido. Continúa cuando estés listo.","CONTINUAR");}else{overlay.classList.add("hidden");$("pauseBadge").hidden=true;running=true;last=performance.now();raf=requestAnimationFrame(loop);}});
 addEventListener("keydown",e=>{if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();if(!e.repeat&&running){if(rope)release();else attach();}}if(e.code==="KeyR")start();if(e.code==="Escape"&&running)$("pauseBtn").click();});
+addEventListener("pagehide",saveProgress);addEventListener("beforeunload",saveProgress);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveProgress();});
 resize();levelSetup();draw();
 })();
