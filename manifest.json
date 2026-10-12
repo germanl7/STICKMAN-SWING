@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "Stickman Swing",
+  "short_name": "Stickman",
+  "description": "Juego de plataformas y balanceo con estilo neón.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#10152b",
+  "theme_color": "#10152b",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
