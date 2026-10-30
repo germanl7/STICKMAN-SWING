@@ -1,4 +1,4 @@
-const CACHE_NAME = "stickman-swing-v1";
+const CACHE_NAME = "stickman-swing-chain-v2";
 const APP_FILES = [
   "./",
   "./index.html",
