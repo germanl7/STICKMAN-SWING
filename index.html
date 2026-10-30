@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="./icon.svg">
   <title>Stickman Swing — Juego de balanceo</title>
   <link rel="stylesheet" href="style.css">
-  <script src="script.js?v=20261011pwa1" defer></script>
+  <script src="script.js?v=20261030chain1" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
@@ -40,7 +40,7 @@
     </section>
 
     <section class="play-area">
-      <canvas id="gameCanvas" aria-label="Juego de plataformas y balanceo. Toca para engancharte y suelta para volar."></canvas>
+      <canvas id="gameCanvas" aria-label="Juego de plataformas y balanceo. Toca para lanzar la cadena, balancearte y planear entre plataformas."></canvas>
       <div id="overlay" class="overlay">
         <div class="overlay-card">
           <div class="hero-icon" aria-hidden="true"><span>↗</span><i></i></div>
@@ -48,7 +48,7 @@
           <h1 id="overlayTitle">¡A balancearse!</h1>
           <p id="overlayText">Engánchate a los puntos, gana impulso y llega a la meta.</p>
           <button id="mainBtn" class="primary-btn">JUGAR <span>→</span></button>
-          <div class="mini-controls"><span>🖱️ Clic izquierdo: enganchar / soltar</span><span>✦ Gana impulso y llega a la bandera</span></div>
+          <div class="mini-controls"><span>🖱️ Clic o ESPACIO: enganchar / soltar</span><span>✦ La cadena te atrae y luego puedes planear</span></div>
         </div>
       </div>
       <div id="toast" class="toast" role="status"></div>
