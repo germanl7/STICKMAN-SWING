@@ -41,8 +41,8 @@ function attach(){
  let best=null,bestD=Infinity;
  for(let i=0;i<anchors.length;i++){const a=anchors[i];if(a.used||(rope&&rope.i===i)||a.x<player.x+35)continue;const d=Math.hypot(a.x-player.x,a.y-(player.y-8));if(d<510&&d<bestD){best=a;bestD=d;best.i=i;}}
  if(!best){message("Acércate al siguiente aro");return;}
- rope={a:best,i:best.i,len:Math.max(90,Math.min(bestD,Math.max(200,H*.66)))};
- player.grounded=false;message("¡CUERDA ENGANCHADA!");
+ rope={a:best,i:best.i,len:Math.max(145,Math.min(bestD,Math.max(220,H*.7))),age:0};
+ player.grounded=false;message("¡CADENA ENGANCHADA!");
 }
 function release(){
  if(!rope)return;
@@ -50,8 +50,9 @@ function release(){
  // Convertir el movimiento angular en impulso sin velocidad artificial constante.
  const dx=player.x-a.x,dy=player.y-a.y,d=Math.hypot(dx,dy)||1;
  const tx=-dy/d,ty=dx/d,dir=player.vx*tx+player.vy*ty>=0?1:-1;
- player.vx+=tx*dir*.75;player.vy+=ty*dir*.75;
- a.used=true;rope=null;burst(player.x,player.y,"#72f7ff",12);message("¡VUELA!");
+ player.vx+=tx*dir*1.05;player.vy+=ty*dir*1.05;
+ player.vx=Math.max(player.vx,3.1);
+ a.used=true;rope=null;burst(player.x,player.y,"#72f7ff",18);message("¡IMPULSO!");
 }
 function burst(x,y,color,n){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-3,3),vy:rand(-3,2),life:rand(15,28),color,size:rand(1.5,3.5)});}
 function lose(){running=false;rope=null;show("¡Casi lo logras!","Caíste antes de llegar. Reintenta y suelta la cuerda cuando vayas avanzando hacia la meta.","REINTENTAR");}
@@ -61,10 +62,18 @@ function update(dt){
  const oldY=player.y,oldX=player.x;
  // Carrera continua, a velocidad normal.
  if(player.grounded&&player.vx<2.7)player.vx=2.7;
- player.vy+=.27*dt;player.vx*=Math.pow(.9995,dt);
+ // Al avanzar sin cadena, el personaje planea suavemente para cruzar huecos.
+ const gliding=!rope&&!player.grounded&&player.vy>0&&player.vx>2.2;
+ player.vy+=(gliding?.105:.27)*dt;
+ player.vx*=Math.pow(gliding?.9998:.9995,dt);
  player.x+=player.vx*dt;player.y+=player.vy*dt;
  if(rope){
+   rope.age+=dt;
+   // La cadena recoge longitud poco a poco y atrae al personaje hacia el anclaje.
+   rope.len=Math.max(118,rope.len-1.05*dt);
    const dx=player.x-rope.a.x,dy=player.y-rope.a.y,d=Math.hypot(dx,dy)||1;
+   player.vx+=(-dx/d)*.035*dt;
+   player.vy+=(-dy/d)*.035*dt;
    if(d>rope.len){
      const nx=dx/d,ny=dy/d;player.x=rope.a.x+nx*rope.len;player.y=rope.a.y+ny*rope.len;
      const radial=player.vx*nx+player.vy*ny;player.vx-=radial*nx;player.vy-=radial*ny;
@@ -84,7 +93,7 @@ function update(dt){
  particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=.07*dt;p.life-=dt;});particles=particles.filter(p=>p.life>0);
  camera=clamp(player.x-W*.32,0,world-W+100);
  progressFill.style.width=clamp(player.x/world*100,0,100)+"%";
- if(player.x-oldX>2.7&&Math.random()<.12){score++;updateScore();}
+ if(Math.floor(player.x/35)>Math.floor(oldX/35)){score+=1;updateScore();}
 }
 function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
 function draw(){
@@ -109,13 +118,21 @@ function draw(){
  // Finish flag
  const fx=world-135,fy=H*.78;ctx.save();ctx.shadowColor="#d9ff72";ctx.shadowBlur=12;ctx.strokeStyle="#d9ff72";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(fx,fy-55);ctx.lineTo(fx,fy+38);ctx.stroke();ctx.shadowBlur=0;const cell=9;for(let row=0;row<5;row++)for(let col=0;col<6;col++){ctx.fillStyle=(row+col)%2?"#12192f":"#f6f8ff";ctx.fillRect(fx+col*cell,fy-55+row*cell,cell,cell);}ctx.restore();
  // Rope
- if(rope){ctx.save();ctx.shadowColor="#75faff";ctx.shadowBlur=13;ctx.strokeStyle="#a2ffff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(rope.a.x,rope.a.y);ctx.lineTo(player.x,player.y-5);ctx.stroke();ctx.restore();}
+ if(rope){
+   ctx.save();ctx.shadowColor="#75faff";ctx.shadowBlur=13;ctx.strokeStyle="#b8ffff";ctx.lineWidth=3;
+   ctx.beginPath();ctx.moveTo(rope.a.x,rope.a.y);ctx.lineTo(player.x,player.y-5);ctx.stroke();
+   // Eslabones luminosos para que se vea como una cadena y no como una línea simple.
+   const dx=player.x-rope.a.x,dy=player.y-5-rope.a.y,len=Math.hypot(dx,dy),steps=Math.max(2,Math.floor(len/13));
+   ctx.shadowBlur=7;
+   for(let n=1;n<steps;n++){const t=n/steps;ctx.fillStyle=n%2?"#70f7ff":"#e9ffff";ctx.beginPath();ctx.arc(rope.a.x+dx*t,rope.a.y+dy*t,2.1,0,Math.PI*2);ctx.fill();}
+   ctx.restore();
+ }
  // Motion trail
  player.trail.forEach((p,i)=>{ctx.globalAlpha=(i+1)/player.trail.length*.24;ctx.fillStyle="#70f7ff";ctx.beginPath();ctx.arc(p.x,p.y,2+(i/player.trail.length)*3,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;
  particles.forEach(p=>{ctx.globalAlpha=clamp(p.life/28,0,1);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;ctx.shadowBlur=0;
  drawPlayer(player.x,player.y,player.angle);
  ctx.restore();
- if(running){ctx.fillStyle="#e9f5ffb8";ctx.font="700 11px sans-serif";ctx.textAlign="center";ctx.fillText(rope?"CLIC PARA SOLTAR Y VOLAR":"CLIC PARA ENGANCHARTE",W/2,H-17);}
+ if(running){ctx.fillStyle="#e9f5ffb8";ctx.font="700 11px sans-serif";ctx.textAlign="center";ctx.fillText(rope?"TOCA PARA SOLTAR Y TOMAR IMPULSO":"TOCA PARA LANZAR LA CADENA",W/2,H-17);}
 }
 function drawPlayer(x,y,a){
  ctx.save();ctx.translate(x,y);ctx.rotate(clamp(a*.42,-.7,.7));ctx.lineCap="round";ctx.lineJoin="round";
